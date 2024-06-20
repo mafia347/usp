@@ -2,64 +2,54 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #include <errno.h>
 
-void file_lock(int fd) {
-struct flock fl;
-fl.l_type = F_WRLCK; // Write lock
-fl.l_whence = SEEK_SET;
-fl.l_start = 0;
-fl.l_len = 0; // Lock entire file
+void lock_file(int fd) {
+    struct flock fl;
+    fl.l_type = F_WRLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0; // Lock the entire file
 
-if (fcntl(fd, F_SETLKW, &fl) == -1) {
-perror("fcntl");
-exit(EXIT_FAILURE);
-}
-printf("File locked successfully!\n");
+    if (fcntl(fd, F_SETLKW, &fl) == -1) {
+        perror("Failed to lock file");
+        exit(EXIT_FAILURE);
+    }
+    printf("File locked successfully!\n");
 }
 
-void file_unlock(int fd) {
-struct flock fl;
-fl.l_type = F_UNLCK; // Unlock
-fl.l_whence = SEEK_SET;
-fl.l_start = 0;
-fl.l_len = 0; // Unlock entire file
+void unlock_file(int fd) {
+    struct flock fl;
+    fl.l_type = F_UNLCK;
+    fl.l_whence = SEEK_SET;
+    fl.l_start = 0;
+    fl.l_len = 0; // Unlock the entire file
 
-if (fcntl(fd, F_SETLK, &fl) == -1) {
-perror("fcntl");
-exit(EXIT_FAILURE);
-}
-printf("File unlocked successfully!\n");
+    if (fcntl(fd, F_SETLK, &fl) == -1) {
+        perror("Failed to unlock file");
+        exit(EXIT_FAILURE);
+    }
+    printf("File unlocked successfully!\n");
 }
 
 int main() {
-int fd;
-char *filename = "testfile.txt";
+    const char *filename = "example.txt";
+    int fd = open(filename, O_RDWR | O_CREAT, 0666);
+    if (fd == -1) {
+        perror("Failed to open file");
+        exit(EXIT_FAILURE);
+    }
 
-if ((fd = open(filename, O_RDWR | O_CREAT, 0666)) == -1) {
-perror("open");
-exit(EXIT_FAILURE);
-}
+    printf("Locking the file...\n");
+    lock_file(fd); // Lock for writing
 
-if (write(fd, "Hello, world!\n", 14) != 14) {
-perror("write");
-exit(EXIT_FAILURE);
-}
+    printf("Press Enter to unlock...\n");
+    getchar(); // Wait for user input
 
-file_lock(fd);
+    printf("Unlocking the file...\n");
+    unlock_file(fd);
 
-if (write(fd, "Locked file content\n", 20) == -1) {
-perror("write");
-printf("Error: Cannot write to the locked file.\n");
-}
-
-file_unlock(fd);
-
-if (write(fd, "Unlocked file content\n", 22) != 22) {
-perror("write");
-exit(EXIT_FAILURE);
-}
-
-close(fd);
-return 0;
+    close(fd);
+    return 0;
 }
