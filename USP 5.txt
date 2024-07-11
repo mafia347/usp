@@ -6,50 +6,50 @@
 #include <errno.h>
 
 void lock_file(int fd) {
-    struct flock fl;
-    fl.l_type = F_WRLCK;
-    fl.l_whence = SEEK_SET;
-    fl.l_start = 0;
-    fl.l_len = 0; // Lock the entire file
+struct flock fl;
+fl.l_type = F_WRLCK;
+fl.l_whence = SEEK_SET;
+fl.l_start = 0;
+fl.l_len = 0; // Lock the entire file
 
-    if (fcntl(fd, F_SETLKW, &fl) == -1) {
-        perror("Failed to lock file");
-        exit(EXIT_FAILURE);
-    }
-    printf("File locked successfully!\n");
+if (fcntl(fd, F_SETLKW, &fl) == -1) {
+perror("Failed to lock file");
+exit(EXIT_FAILURE);
+}
+printf("File locked successfully!\n");
 }
 
 void unlock_file(int fd) {
-    struct flock fl;
-    fl.l_type = F_UNLCK;
-    fl.l_whence = SEEK_SET;
-    fl.l_start = 0;
-    fl.l_len = 0; // Unlock the entire file
+struct flock fl;
+fl.l_type = F_UNLCK;
+fl.l_whence = SEEK_SET;
+fl.l_start = 0;
+fl.l_len = 0; // Unlock the entire file
 
-    if (fcntl(fd, F_SETLK, &fl) == -1) {
-        perror("Failed to unlock file");
-        exit(EXIT_FAILURE);
-    }
-    printf("File unlocked successfully!\n");
+if (fcntl(fd, F_SETLK, &fl) == -1) {
+perror("Failed to unlock file");
+exit(EXIT_FAILURE);
+}
+printf("File unlocked successfully!\n");
 }
 
 int main() {
-    const char *filename = "example.txt";
-    int fd = open(filename, O_RDWR | O_CREAT, 0666);
-    if (fd == -1) {
-        perror("Failed to open file");
-        exit(EXIT_FAILURE);
-    }
+const char *filename = "example.txt";
+int fd = open(filename, O_RDWR | O_CREAT, 0666);
+if (fd == -1) {
+perror("Failed to open file");
+exit(EXIT_FAILURE);
+}
 
-    printf("Locking the file...\n");
-    lock_file(fd); // Lock for writing
+printf("Locking the file...\n");
+lock_file(fd); // Lock for writing
 
-    printf("Press Enter to unlock...\n");
-    getchar(); // Wait for user input
+printf("Press Enter to unlock...\n");
+getchar(); // Wait for user input
 
-    printf("Unlocking the file...\n");
-    unlock_file(fd);
+printf("Unlocking the file...\n");
+unlock_file(fd);
 
-    close(fd);
-    return 0;
+close(fd);
+return 0;
 }
