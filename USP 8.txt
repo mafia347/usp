@@ -1,0 +1,69 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/wait.h>
+
+void create_zombie_process() {
+pid_t pid = fork();
+if (pid > 0) {
+printf("Parent created a zombie process (PID: %d)\n", pid);
+} else if (pid == 0) {
+printf("Zombie process (PID: %d)\n", getpid());
+exit(EXIT_SUCCESS);
+}
+}
+
+void prevent_zombie_processes() {
+if (fork() == 0) {
+if (fork() == 0) {
+printf("Grandchild process (PID: %d)\n", getpid());
+sleep(5);
+printf("Grandchild process completed\n");
+} else {
+printf("First child (PID: %d) exited\n", getpid());
+}
+exit(EXIT_SUCCESS);
+} else {
+sleep(2);
+}
+}
+
+void create_orphan_process() {
+if (fork() == 0) {
+printf("Orphan process (PID: %d)\n", getpid());
+sleep(5);
+printf("Orphan process completed\n");
+} else {
+printf("Parent process (PID: %d)\n", getpid());
+sleep(2);
+}
+}
+
+void parent_child_scenario() {
+if (fork() == 0) {
+printf("Child process (PID: %d)\n", getpid());
+} else {
+printf("Parent process (PID: %d)\n", getpid());
+wait(NULL);
+}
+}
+
+int main() {
+printf("Demonstrating Zombie process:\n");
+create_zombie_process();
+sleep(5);
+
+printf("\nPreventing Zombie processes:\n");
+prevent_zombie_processes();
+sleep(7);
+
+printf("\nCreating an Orphan process:\n");
+create_orphan_process();
+sleep(7);
+
+printf("\nParent-Child scenario:\n");
+parent_child_scenario();
+sleep(1);
+
+return 0;
+}
